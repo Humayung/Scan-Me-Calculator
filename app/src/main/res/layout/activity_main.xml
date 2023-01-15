@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:layout_width="match_parent"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context=".MainActivity">
+
+   <RelativeLayout
+       android:id="@+id/parent"
+       android:visibility="visible"
+       android:layout_width="match_parent"
+       android:layout_height="match_parent">
+
+      <RelativeLayout
+          android:visibility="gone"
+          android:id="@+id/overlayBar"
+          android:layout_width="match_parent"
+          android:layout_height="match_parent"
+          android:background="#A9000000"
+          android:translationZ="10dp">
+
+         <ImageView
+             android:id="@+id/loadingIndicator"
+             android:layout_width="100dp"
+             android:layout_height="100dp"
+             android:layout_centerInParent="true" />
+      </RelativeLayout>
+
+      <TextView
+          android:id="@+id/emptyResultText"
+          android:layout_width="match_parent"
+          android:layout_height="match_parent"
+          android:gravity="center"
+          android:textSize="16sp"
+          android:text="@string/your_results_will_apear_here_start_capturing_math_expression"
+          android:layout_centerVertical="true"
+          />
+
+      <androidx.recyclerview.widget.RecyclerView
+          android:visibility="gone"
+          android:id="@+id/resultsRv"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          tools:listitem="@layout/item_result"
+          tools:itemCount="3"
+          android:layout_above="@id/addInputBtn"
+          app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+          android:layout_alignParentTop="true"/>
+
+      <Button
+          android:id="@+id/addInputBtn"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:text="Add Input"
+          android:layout_above="@id/errorPermissionTxt"
+          android:layout_centerHorizontal="true"/>
+
+      <Button
+          android:id="@+id/addInputFileBtn"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:text="File"
+          android:layout_above="@id/errorPermissionTxt"
+          android:layout_toEndOf="@id/addInputBtn"/>
+
+      <TextView
+          android:visibility="gone"
+          android:id="@+id/errorPermissionTxt"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:textColor="@color/red"
+          android:textSize="12sp"
+          android:text="Permission not granted!"
+          android:gravity="center_horizontal"
+          android:layout_above="@id/radioGroup"/>
+
+
+      <RadioGroup
+          android:id="@+id/radioGroup"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_alignParentBottom="true"
+          android:checkedButton="@+id/radioButton1"
+          android:layout_marginBottom="24dp">
+
+         <RadioButton
+             android:id="@+id/radioButton1"
+             android:layout_width="match_parent"
+             android:layout_height="wrap_content"
+             android:layout_gravity="start"
+             android:background="?android:selectableItemBackground"
+             android:button="@null"
+             android:drawableEnd="?android:attr/listChoiceIndicatorSingle"
+             android:paddingLeft="20dp"
+             android:paddingTop="10dp"
+             android:paddingRight="20dp"
+             android:paddingBottom="10dp"
+             android:text="@string/use_file_storage"
+             android:textAlignment="textStart"
+             android:textSize="14sp" />
+
+         <RadioButton
+             android:id="@+id/radioButton2"
+             android:layout_width="match_parent"
+             android:layout_height="wrap_content"
+             android:layout_gravity="start"
+             android:background="?android:selectableItemBackground"
+             android:button="@null"
+             android:drawableEnd="?android:attr/listChoiceIndicatorSingle"
+             android:paddingLeft="20dp"
+             android:paddingTop="10dp"
+             android:paddingRight="20dp"
+             android:paddingBottom="10dp"
+             android:text="@string/use_database_storage"
+             android:textAlignment="textStart"
+             android:textSize="14sp" />
+
+      </RadioGroup>
+   </RelativeLayout>
+
+
+
+</RelativeLayout>

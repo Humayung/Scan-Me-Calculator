@@ -13,11 +13,11 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable
-import com.example.pixabayimages.networking.ApiReq
 import com.example.scanmecalculator.adapter.ResultAdapter
 import com.example.scanmecalculator.databinding.ActivityMainBinding
 import com.example.scanmecalculator.model.OcrResponse
 import com.example.scanmecalculator.model.ResultItem
+import com.example.scanmecalculator.networking.ApiReq
 import com.example.scanmecalculator.networking.Resource
 import com.example.scanmecalculator.networking.Status
 import com.example.scanmecalculator.persistence.Storage
@@ -67,15 +67,17 @@ class MainActivity : AppCompatActivity(), KoinComponent, CoroutineScope {
         resultAdapter = ResultAdapter(resultItem)
         binding.resultsRv.adapter = resultAdapter
         binding.addInputBtn.setOnClickListener {
-            getPermissionThenRun(Manifest.permission.CAMERA,
-                onGranted = { startScanner() },
-                onDenied = { disableScanner() })
+            if (BuildConfig.FLAVOR_input == "fileSystem") {
+                showFileChooser()
+            }
+            if (BuildConfig.FLAVOR_input == "builtInCamera") {
+                getPermissionThenRun(Manifest.permission.CAMERA,
+                    onGranted = { startCamera() },
+                    onDenied = { disableCamera() })
+            }
         }
 
         initLoading()
-        binding.addInputFileBtn.setOnClickListener {
-            showFileChooser()
-        }
 
         binding.storageSelector.setOnCheckedChangeListener { _, i ->
             when (i) {
@@ -117,7 +119,10 @@ class MainActivity : AppCompatActivity(), KoinComponent, CoroutineScope {
             storage.switchStorage(it)
             loadResults()
         }
-        loadResults()
+        Toast.makeText(this, com.example.scanmecalculator.BuildConfig.FLAVOR, Toast.LENGTH_LONG)
+            .show()
+
+
     }
 
     private val job = Job()
@@ -145,14 +150,14 @@ class MainActivity : AppCompatActivity(), KoinComponent, CoroutineScope {
         successOcr(null)
 
         // TODO: TEST DUMMY
-//        apiReq.getOcr(image).observe(this@MainActivity) {
-//            if (it.status == Status.SUCCESS || true) {
-//                successOcr(it)
-//            } else {
-//                failedOcr(it)
-//            }
-//
-//        }
+        apiReq.getOcr(image).observe(this@MainActivity) {
+            if (it.status == Status.SUCCESS) {
+                successOcr(it)
+            } else {
+                failedOcr(it)
+            }
+
+        }
     }
 
     private fun failedOcr(response: Resource<OcrResponse>) {
@@ -179,12 +184,12 @@ class MainActivity : AppCompatActivity(), KoinComponent, CoroutineScope {
 
     private fun successOcr(response: Resource<OcrResponse>?) {
 
-//        val text = response.response!!.ParsedResults[0].ParsedText
-//        val firstExpression = text.split("\n")[0]
+        val text = response?.response!!.ParsedResults[0].ParsedText
+        val firstExpression = text.split("\n")[0]
 
         // TODO: TEST DUMMYTEST DUMMYTEST DUMMYTEST DUMMYTEST DUMMYTEST DUMMYTEST DUMMYTEST DUMMYTEST DUMMY
-        val text = "3+4\n5+2"
-        val firstExpression = "3+4"
+//        val text = "3+4\n5+2"
+//        val firstExpression = "3+4"
 
         Log.d(TAG, "BODY $text")
         consumeExpression(firstExpression)
@@ -251,12 +256,12 @@ class MainActivity : AppCompatActivity(), KoinComponent, CoroutineScope {
         job.cancel() // cancel all coroutines when the activity is destroyed
     }
 
-    private fun startScanner() {
+    private fun startCamera() {
         val intent = Intent(applicationContext, CameraActivity::class.java)
         startActivity(intent)
     }
 
-    private fun disableScanner() = with(binding) {
+    private fun disableCamera() = with(binding) {
         addInputBtn.isEnabled = false
         errorPermissionTxt.visibility = View.VISIBLE
     }

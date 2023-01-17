@@ -1,7 +1,7 @@
 package com.example.scanmecalculator
 
 import android.content.Context
-import com.example.pixabayimages.networking.ApiReq
+import com.example.scanmecalculator.networking.ApiReq
 import com.example.scanmecalculator.networking.*
 import com.example.scanmecalculator.persistence.Storage
 import mathjs.niltonvasques.com.mathjs.MathJS

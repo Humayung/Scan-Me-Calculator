@@ -1,4 +1,4 @@
-package com.example.pixabayimages.networking
+package com.example.scanmecalculator.networking
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.liveData

@@ -60,33 +60,19 @@
           android:layout_width="match_parent"
           android:layout_height="wrap_content"
           android:text="@string/storage_used_non_encrypted_shared_preferences"
-          android:layout_above="@id/buttons"/>
-      <LinearLayout
-          android:id="@+id/buttons"
-          android:layout_width="match_parent"
-          android:layout_height="wrap_content"
-          android:layout_above="@id/errorPermissionTxt"
-          android:layout_centerHorizontal="true"
-          android:orientation="horizontal"
-          android:gravity="center_horizontal">
+          android:layout_above="@id/addInputBtn"/>
+
 
       <Button
           android:id="@+id/addInputBtn"
-          android:layout_width="120dp"
+          android:layout_width="wrap_content"
           android:layout_height="wrap_content"
           android:text="Add Input"
-          tools:ignore="HardcodedText" />
-         <View
-             android:layout_width="48dp"
-             android:layout_height="48dp"/>
+          tools:ignore="HardcodedText"
+          android:layout_above="@id/errorPermissionTxt"
+          android:layout_centerHorizontal="true" />
 
-      <Button
-          android:id="@+id/addInputFileBtn"
-          android:layout_width="120dp"
-          android:layout_height="wrap_content"
-          android:text="Add File"
-          tools:ignore="HardcodedText" />
-      </LinearLayout>
+
 
       <TextView
           android:visibility="gone"

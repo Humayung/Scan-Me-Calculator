@@ -1,36 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/previewGroup"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <LinearLayout
-        android:layout_width="match_parent"
+
+    <ImageView
+        android:id="@+id/deleteBtn"
+        android:layout_width="48dp"
         android:layout_height="48dp"
-        android:orientation="horizontal"
-        android:gravity="center_horizontal">
+        android:layout_centerHorizontal="true"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:src="@drawable/ic_delete_foreground"
+        app:tint="@color/black" />
 
-        <ImageView
-            android:id="@+id/deleteBtn"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@drawable/ic_delete_foreground"
-            app:tint="@color/black"/>
-
-        <View
-            android:layout_width="50dp"
-            android:layout_height="wrap_content"/>
-        <ImageView
-            android:id="@+id/rotateBtn"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@drawable/ic_rotate_foreground"
-            app:tint="@color/black"/>
-    </LinearLayout>
 
     <ImageView
         android:id="@+id/imagePreview"
@@ -47,10 +31,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_above="@id/contrastSlider"
-        android:valueFrom="-255"
-        android:valueTo="255"
         android:value="0"
-        />
+        android:valueFrom="-255"
+        android:valueTo="255" />
 
 
     <com.google.android.material.slider.Slider
@@ -58,19 +41,19 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_above="@id/processButton"
+        android:value="1"
         android:valueFrom="-10"
-        android:valueTo="10"
-        android:value="1"/>
+        android:valueTo="10" />
 
 
     <Button
         android:id="@+id/processButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Process Image"
-        android:layout_centerHorizontal="true"
         android:layout_alignParentBottom="true"
-        android:layout_marginBottom="24dp"/>
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="24dp"
+        android:text="Process Image" />
 
 
 </RelativeLayout>

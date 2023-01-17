@@ -1,12 +1,28 @@
 package com.example.scanmecalculator
 
-import com.googlecode.tesseract.android.TessBaseAPI
+import android.content.Context
+import com.example.pixabayimages.networking.ApiReq
+import com.example.scanmecalculator.networking.*
+import com.example.scanmecalculator.persistence.Storage
 import mathjs.niltonvasques.com.mathjs.MathJS
+import org.koin.core.module.Module
 import org.koin.dsl.module
 
-val koinModules = module {
-    single { TessBaseAPI() }
-    single { MemoryDb() }
-    single { MathJS() }
 
+fun koinModules(context: Context): Module {
+    return module {
+        single { MemoryDb() }
+        single { MathJS() }
+        single { Repository(get(), get()) }
+        single { ApiReq() }
+        factory { provideOkHttpClient(get()) }
+        factory { provideForecastApi(get()) }
+        factory { provideLoggingInterceptor() }
+        single { provideRetrofit(get()) }
+        factory { ResponseHandler() }
+        single { Storage(context) }
+
+    }
 }
+
+

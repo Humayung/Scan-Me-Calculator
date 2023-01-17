@@ -5,75 +5,54 @@ import android.net.Uri
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.coroutineScope
-import kotlinx.android.synthetic.main.activity_preview.*
+import com.example.scanmecalculator.databinding.ActivityPreviewBinding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
+import java.io.File
+import java.io.FileOutputStream
 
 
 class PreviewActivity : AppCompatActivity(), KoinComponent {
 
     private val memoryDb: MemoryDb by inject()
-
-    override fun onCreate(savedInstanceState: Bundle?) {
+    private lateinit var binding: ActivityPreviewBinding
+    override fun onCreate(savedInstanceState: Bundle?)  {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_preview)
 
-        brightnessSlider.addOnChangeListener { _, value, _ ->
+
+        binding = ActivityPreviewBinding.inflate(layoutInflater)
+        val view = binding.root
+
+        setContentView(view)
+
+        binding.brightnessSlider.addOnChangeListener { _, value, _ ->
             memoryDb.brightness.value = value
         }
-        contrastSlider.addOnChangeListener { _, value, _ ->
+        binding.contrastSlider.addOnChangeListener { _, value, _ ->
             memoryDb.contrast.value = value
         }
-        memoryDb.contrast.observe(this) {
+        memoryDb.contrast.observe(this@PreviewActivity) {
             setContrastAndBrightness()
         }
-        memoryDb.brightness.observe(this) {
+        memoryDb.brightness.observe(this@PreviewActivity) {
             setContrastAndBrightness()
         }
-        processButton.setOnClickListener {
+        binding.processButton.setOnClickListener {
             finaliseImage()
         }
-        deleteBtn.setOnClickListener {
+        binding.deleteBtn.setOnClickListener {
             deleteImage()
         }
-
-        rotateBtn.setOnClickListener {
-            rotateImage()
-        }
-
-        memoryDb.imageUri.observe(this) {
+        memoryDb.imageUri.observe(this@PreviewActivity) {
             setPreview(it)
         }
-        imagePreview.isDrawingCacheEnabled = true;
+        binding.imagePreview.isDrawingCacheEnabled = true;
     }
 
-
-    private fun rotateImage() {
-//        val bmp = imagePreview.drawingCache
-//        val matrix = Matrix()
-//        matrix.postRotate(90f)
-//        val scaledBitmap = Bitmap.createScaledBitmap(
-//            bmp,
-//            bmp.width,
-//            bmp.height,
-//            true
-//        ) //BitmapOrg- is origanl bitmap
-//        val rotatedBitmap = Bitmap.createBitmap(
-//            scaledBitmap,
-//            0,
-//            0,
-//            scaledBitmap.width,
-//            scaledBitmap.height,
-//            matrix,
-//            true
-//        )
-//        imagePreview.setImageBitmap(rotatedBitmap)
-    }
-
-    private fun setPreview(imageUri: Uri) {
+    private fun setPreview(imageUri: Uri) = with(binding){
         lifecycle.coroutineScope.launch {
             contrastSlider.value = 1f
             brightnessSlider.value = 0f
@@ -86,18 +65,18 @@ class PreviewActivity : AppCompatActivity(), KoinComponent {
 
     }
 
-    private fun deleteImage() {
+    private fun deleteImage() = with(binding){
         imagePreview.setImageBitmap(null)
         finish()
     }
 
-
-    private fun finaliseImage() {
+    private fun finaliseImage() = with(binding){
         val bmp = imagePreview.drawingCache
-        memoryDb.imageToProcess.value = bmp
+        val photoFile = File(filesDir, "post-processed.jpeg")
+        bmp.compress(Bitmap.CompressFormat.JPEG, 100, FileOutputStream(photoFile))
+        memoryDb.imageToProcess.value = photoFile
         finish()
     }
-
 
     private fun scaleDownBmp(bmp: Bitmap): Bitmap? {
         val originalWidth = bmp.width
@@ -105,8 +84,6 @@ class PreviewActivity : AppCompatActivity(), KoinComponent {
         val desiredWidth = (originalWidth * 0.5).toInt()
         val desiredHeight = (originalHeight * 0.5).toInt()
         return Bitmap.createScaledBitmap(bmp, desiredWidth, desiredHeight, true)
-
-
     }
 
 
@@ -119,34 +96,11 @@ class PreviewActivity : AppCompatActivity(), KoinComponent {
         var bmp = BitmapFactory.decodeStream(iStream, null, options)
         iStream?.close()
         bmp = scaleDownBmp(bmp!!)
-        bmp = turnIntoGrayscale(bmp!!)
         return bmp
     }
 
-    private fun turnIntoGrayscale(original: Bitmap): Bitmap {
-        val grayBitmap = Bitmap.createScaledBitmap(
-            original,
-            original.width,
-            original.height,
-            true
-        )
-        grayBitmap.config = Bitmap.Config.ARGB_8888
 
-        for (i in 0 until grayBitmap.width) {
-            for (j in 0 until grayBitmap.height) {
-                val pixel = grayBitmap.getPixel(i, j)
-                val red = Color.red(pixel)
-                val green = Color.green(pixel)
-                val blue = Color.blue(pixel)
-                val gray = (red + green + blue) / 3
-                grayBitmap.setPixel(i, j, Color.rgb(gray, gray, gray))
-            }
-        }
-        return grayBitmap
-    }
-
-    private fun setContrastAndBrightness() {
-
+    private fun setContrastAndBrightness() = with(binding){
         val contrast = memoryDb.contrast.value ?: 1f
         val brightness = memoryDb.brightness.value ?: 0f
 

@@ -5,4 +5,6 @@
     <string name="your_results_will_apear_here_start_capturing_math_expression">Your results will appear here. Start capturing math expression!</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="storage_used_non_encrypted_shared_preferences">Storage Used: Non encrypted Shared Preferences</string>
+    <string name="storage_used_encrypted_file">Storage Used: Encrypted File</string>
 </resources>

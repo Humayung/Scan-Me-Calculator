@@ -1,6 +1,6 @@
 package com.example.scanmecalculator.model
 
-class ResultItem {
-    var input: String = ""
-    var output: String = ""
+class ResultItem(s: String = "", s1: String = "") {
+    var input: String = s
+    var output: String = s1
 }

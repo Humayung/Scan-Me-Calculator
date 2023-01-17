@@ -2,23 +2,21 @@ package com.example.scanmecalculator.adapter
 
 import android.util.Log
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import com.example.scanmecalculator.R
+import com.example.scanmecalculator.databinding.ItemResultBinding
 import com.example.scanmecalculator.model.ResultItem
-import kotlinx.android.synthetic.main.item_result.view.*
 import java.util.ArrayList
 
 class ResultAdapter(private var list: ArrayList<ResultItem>) : RecyclerView.Adapter<ResultAdapter.Holder>() {
+
+    lateinit var binding : ItemResultBinding
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): Holder {
         Log.d("hey", list.toString())
+
+        binding = ItemResultBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return Holder(
-            LayoutInflater.from(parent.context).inflate(
-                R.layout.item_result,
-                parent,
-                false
-            )
+            binding
         )
     }
 
@@ -42,9 +40,14 @@ class ResultAdapter(private var list: ArrayList<ResultItem>) : RecyclerView.Adap
 
     override fun onBindViewHolder(holder: Holder, position: Int) {
         val item = list[position]
-        holder.itemView.textInput.text = item.input
-        holder.itemView.textOutput.text = item.output
+        holder.bind(item)
     }
 
-    inner class Holder(itemView: View) : RecyclerView.ViewHolder(itemView){}
+     class Holder(private val itemBinding: ItemResultBinding) : RecyclerView.ViewHolder(itemBinding.root){
+        fun bind(item: ResultItem) {
+            itemBinding.textInput.text = item.input
+            itemBinding.textOutput.text = item.output
+
+        }
+    }
 }

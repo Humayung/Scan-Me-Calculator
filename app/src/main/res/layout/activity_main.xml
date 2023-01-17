@@ -25,7 +25,16 @@
              android:layout_width="100dp"
              android:layout_height="100dp"
              android:layout_centerInParent="true" />
+         <TextView
+             android:id="@+id/textLoading"
+             android:layout_width="wrap_content"
+             android:layout_height="wrap_content"
+             android:layout_below="@id/loadingIndicator"
+             android:layout_centerHorizontal="true"
+             android:textColor="@color/white" />
+
       </RelativeLayout>
+
 
       <TextView
           android:id="@+id/emptyResultText"
@@ -34,35 +43,50 @@
           android:gravity="center"
           android:textSize="16sp"
           android:text="@string/your_results_will_apear_here_start_capturing_math_expression"
-          android:layout_centerVertical="true"
-          />
+          android:layout_centerVertical="true" />
 
       <androidx.recyclerview.widget.RecyclerView
-          android:visibility="gone"
           android:id="@+id/resultsRv"
           android:layout_width="match_parent"
           android:layout_height="wrap_content"
           tools:listitem="@layout/item_result"
-          tools:itemCount="3"
-          android:layout_above="@id/addInputBtn"
-          app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-          android:layout_alignParentTop="true"/>
+          tools:itemCount="10"
+          android:layout_alignParentTop="true"
+          android:layout_above="@id/storageLabel"
+          app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+      <TextView
+          android:paddingStart="20dp"
+          android:id="@+id/storageLabel"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:text="@string/storage_used_non_encrypted_shared_preferences"
+          android:layout_above="@id/buttons"/>
+      <LinearLayout
+          android:id="@+id/buttons"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_above="@id/errorPermissionTxt"
+          android:layout_centerHorizontal="true"
+          android:orientation="horizontal"
+          android:gravity="center_horizontal">
 
       <Button
           android:id="@+id/addInputBtn"
-          android:layout_width="wrap_content"
+          android:layout_width="120dp"
           android:layout_height="wrap_content"
           android:text="Add Input"
-          android:layout_above="@id/errorPermissionTxt"
-          android:layout_centerHorizontal="true"/>
+          tools:ignore="HardcodedText" />
+         <View
+             android:layout_width="48dp"
+             android:layout_height="48dp"/>
 
       <Button
           android:id="@+id/addInputFileBtn"
-          android:layout_width="wrap_content"
+          android:layout_width="120dp"
           android:layout_height="wrap_content"
-          android:text="File"
-          android:layout_above="@id/errorPermissionTxt"
-          android:layout_toEndOf="@id/addInputBtn"/>
+          android:text="Add File"
+          tools:ignore="HardcodedText" />
+      </LinearLayout>
 
       <TextView
           android:visibility="gone"
@@ -73,19 +97,19 @@
           android:textSize="12sp"
           android:text="Permission not granted!"
           android:gravity="center_horizontal"
-          android:layout_above="@id/radioGroup"/>
+          android:layout_above="@id/storageSelector"/>
 
 
       <RadioGroup
-          android:id="@+id/radioGroup"
+          android:id="@+id/storageSelector"
           android:layout_width="match_parent"
           android:layout_height="wrap_content"
           android:layout_alignParentBottom="true"
-          android:checkedButton="@+id/radioButton1"
+          android:checkedButton="@id/useDatabaseStorage"
           android:layout_marginBottom="24dp">
 
          <RadioButton
-             android:id="@+id/radioButton1"
+             android:id="@+id/useFileStorage"
              android:layout_width="match_parent"
              android:layout_height="wrap_content"
              android:layout_gravity="start"
@@ -101,7 +125,7 @@
              android:textSize="14sp" />
 
          <RadioButton
-             android:id="@+id/radioButton2"
+             android:id="@+id/useDatabaseStorage"
              android:layout_width="match_parent"
              android:layout_height="wrap_content"
              android:layout_gravity="start"

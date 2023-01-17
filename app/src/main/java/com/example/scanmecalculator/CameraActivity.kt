@@ -16,8 +16,8 @@ import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.lifecycle.coroutineScope
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable
+import com.example.scanmecalculator.databinding.ActivityCameraBinding
 import com.google.common.util.concurrent.ListenableFuture
-import kotlinx.android.synthetic.main.activity_camera.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -29,24 +29,27 @@ import java.io.FileOutputStream
 class CameraActivity : AppCompatActivity(), KoinComponent {
 
     private lateinit var cameraProviderFuture: ListenableFuture<ProcessCameraProvider>
-
     private lateinit var imageCapture: ImageCapture
-
     private val memoryDb: MemoryDb by inject()
+    private lateinit var binding : ActivityCameraBinding
 
-    override fun onCreate(savedInstanceState: Bundle?) {
+    override fun onCreate(savedInstanceState: Bundle?){
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_camera)
+
+        binding = ActivityCameraBinding.inflate(layoutInflater)
+        val view = binding.root
+
+        setContentView(view)
 
         startCamera()
-        shutterBtn.setOnClickListener {
+        binding.shutterBtn.setOnClickListener {
             takePicture()
         }
         initLoadingIndicator()
     }
 
 
-    private fun initLoadingIndicator() {
+    private fun initLoadingIndicator() = with(binding){
         val circularProgressDrawable = CircularProgressDrawable(applicationContext)
         circularProgressDrawable.strokeWidth = 5f
         circularProgressDrawable.centerRadius = 100f
@@ -55,7 +58,7 @@ class CameraActivity : AppCompatActivity(), KoinComponent {
         loadingIndicator.background = circularProgressDrawable
     }
 
-    private fun attachTorchControl(camera: Camera) {
+    private fun attachTorchControl(camera: Camera)  = with(binding){
         if (!camera.cameraInfo.hasFlashUnit()) {
             torchBtn.visibility = View.GONE
         } else {
@@ -66,7 +69,7 @@ class CameraActivity : AppCompatActivity(), KoinComponent {
         }
     }
 
-    private fun startCamera() {
+    private fun startCamera() = with(binding){
         cameraProviderFuture = ProcessCameraProvider.getInstance(applicationContext)
         cameraProviderFuture.addListener({
             val cameraProvider = cameraProviderFuture.get()
@@ -80,7 +83,7 @@ class CameraActivity : AppCompatActivity(), KoinComponent {
             try {
                 cameraProvider.unbindAll()
                 val camera = cameraProvider.bindToLifecycle(
-                    this, cameraSelector, preview, imageCapture
+                    this@CameraActivity, cameraSelector, preview, imageCapture
                 )
                 attachTorchControl(camera)
             } catch (exc: Exception) {
@@ -90,7 +93,7 @@ class CameraActivity : AppCompatActivity(), KoinComponent {
     }
 
 
-    private fun setLoading(status: Boolean) {
+    private fun setLoading(status: Boolean) = with(binding){
         if (status) {
             overlayBar.visibility = View.VISIBLE
             shutterBtn.isEnabled = false

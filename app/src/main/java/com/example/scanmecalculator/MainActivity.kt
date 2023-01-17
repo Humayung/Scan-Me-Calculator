@@ -147,7 +147,7 @@ class MainActivity : AppCompatActivity(), KoinComponent, CoroutineScope {
         val image = MultipartBody.Part.createFormData(
             "image", "my-image.png", photoFile!!.asRequestBody("image/png".toMediaType())
         )
-        successOcr(null)
+        
 
         // TODO: TEST DUMMY
         apiReq.getOcr(image).observe(this@MainActivity) {

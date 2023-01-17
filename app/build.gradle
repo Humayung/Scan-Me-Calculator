@@ -24,6 +24,14 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
+        'red-filesystem' {
+        }
+        'red-built-in-camera' {
+        }
+        'green-filesystem' {
+        }
+        'green-built-in-camera' {
+        }
     }
 
     buildFeatures {
@@ -37,7 +45,6 @@ android {
         jvmTarget = '1.8'
     }
     namespace 'com.example.scanmecalculator'
-    flavorDimensions 'red', 'green'
 }
 
 dependencies {

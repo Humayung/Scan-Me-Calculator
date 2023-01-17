@@ -143,6 +143,8 @@ class MainActivity : AppCompatActivity(), KoinComponent, CoroutineScope {
             "image", "my-image.png", photoFile!!.asRequestBody("image/png".toMediaType())
         )
         successOcr(null)
+
+        // TODO: TEST DUMMY
 //        apiReq.getOcr(image).observe(this@MainActivity) {
 //            if (it.status == Status.SUCCESS || true) {
 //                successOcr(it)
@@ -180,7 +182,7 @@ class MainActivity : AppCompatActivity(), KoinComponent, CoroutineScope {
 //        val text = response.response!!.ParsedResults[0].ParsedText
 //        val firstExpression = text.split("\n")[0]
 
-        // dummy
+        // TODO: TEST DUMMYTEST DUMMYTEST DUMMYTEST DUMMYTEST DUMMYTEST DUMMYTEST DUMMYTEST DUMMYTEST DUMMY
         val text = "3+4\n5+2"
         val firstExpression = "3+4"
 
@@ -190,30 +192,30 @@ class MainActivity : AppCompatActivity(), KoinComponent, CoroutineScope {
     }
 
     private fun consumeExpression(expression: String) {
-//            try {
-        if (onlySimpleMathExpression(expression)) {
-            val item = ResultItem("input1", "output1")
-            item.input = expression
-            item.output = math.eval(expression)
-            resultItem.add(item)
-            storage.addResult(item)
-            loadResults()
-            Log.d(TAG, "result" + item.output)
-        } else {
+        try {
+            if (onlySimpleMathExpression(expression)) {
+                val item = ResultItem("input1", "output1")
+                item.input = expression
+                item.output = math.eval(expression)
+                resultItem.add(item)
+                storage.addResult(item)
+                loadResults()
+                Log.d(TAG, "result" + item.output)
+            } else {
+                Toast.makeText(
+                    applicationContext,
+                    "$expression is not a simple 2 argument operation!",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        } catch (e: java.lang.Exception) {
+            e.printStackTrace()
             Toast.makeText(
                 applicationContext,
-                "$expression is not a simple 2 argument operation!",
+                "\"$expression\" is not a math expression!",
                 Toast.LENGTH_SHORT
             ).show()
         }
-//            } catch (e: java.lang.Exception) {
-//                Log.e(TAG, e.toString())
-//                Toast.makeText(
-//                    applicationContext,
-//                    "\"$expression\" is not a math expression!",
-//                    Toast.LENGTH_SHORT
-//                ).show()
-//            }
     }
 
     private fun onlySimpleMathExpression(expression: String): Boolean {

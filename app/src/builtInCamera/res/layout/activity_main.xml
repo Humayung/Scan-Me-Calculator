@@ -1,16 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout android:layout_width="match_parent"
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_height="match_parent"
-    xmlns:tools="http://schemas.android.com/tools"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    tools:context=".MainActivity">
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity"
+    android:id="@+id/coordinatorLayout">
 
     <RelativeLayout
         android:id="@+id/parent"
-        android:visibility="visible"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:visibility="visible">
 
         <RelativeLayout
             android:visibility="gone"
@@ -20,70 +21,92 @@
             android:background="#A9000000"
             android:translationZ="10dp">
 
-            <ImageView
-                android:id="@+id/loadingIndicator"
-                android:layout_width="100dp"
-                android:layout_height="100dp"
-                android:layout_centerInParent="true" />
-            <TextView
-                android:id="@+id/textLoading"
-                android:layout_width="wrap_content"
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_below="@id/loadingIndicator"
-                android:layout_centerHorizontal="true"
-                android:textColor="@color/white" />
+                android:layout_marginHorizontal="30dp"
+                android:layout_centerInParent="true"
+                android:translationZ="10dp"
+                app:cardUseCompatPadding="true"
+                app:cardCornerRadius="5dp">
 
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:padding="16dp">
+
+                    <ImageView
+                        android:id="@+id/loadingIndicator"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        app:tint="?android:colorPrimary"/>
+                    <View
+                        android:layout_width="30dp"
+                        android:layout_height="match_parent"/>
+
+                    <TextView
+                        android:id="@+id/textLoading"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/feeding_tesseract"
+                        android:layout_gravity="center_vertical"/>
+                </LinearLayout>
+
+            </androidx.cardview.widget.CardView>
         </RelativeLayout>
 
 
+
         <TextView
+            android:visibility="gone"
             android:id="@+id/emptyResultText"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_centerVertical="true"
             android:gravity="center"
-            android:textSize="16sp"
             android:text="@string/your_results_will_apear_here_start_capturing_math_expression"
-            android:layout_centerVertical="true" />
+            android:textSize="16sp" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/resultsRv"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            tools:listitem="@layout/item_result"
-            tools:itemCount="10"
-            android:layout_alignParentTop="true"
             android:layout_above="@id/storageLabel"
-            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+            android:layout_alignParentTop="true"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            tools:itemCount="10"
+            tools:listitem="@layout/item_result" />
+
         <TextView
-            android:paddingStart="20dp"
             android:id="@+id/storageLabel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/storage_used_non_encrypted_shared_preferences"
-            android:layout_above="@id/addInputBtn"/>
+            android:layout_above="@id/addInputBtn"
+            android:paddingStart="20dp"
+            android:text="@string/storage_used_non_encrypted_shared_preferences" />
 
 
         <Button
             android:id="@+id/addInputBtn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Add Input"
-            tools:ignore="HardcodedText"
             android:layout_above="@id/errorPermissionTxt"
-            android:layout_centerHorizontal="true" />
-
+            android:layout_centerHorizontal="true"
+            android:text="Add Input"
+            tools:ignore="HardcodedText" />
 
 
         <TextView
-            android:visibility="gone"
             android:id="@+id/errorPermissionTxt"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_above="@id/storageSelector"
+            android:gravity="center_horizontal"
+            android:text="Permission not granted!"
             android:textColor="@color/red"
             android:textSize="12sp"
-            android:text="Permission not granted!"
-            android:gravity="center_horizontal"
-            android:layout_above="@id/storageSelector"/>
+            android:visibility="gone" />
 
 
         <RadioGroup
@@ -91,8 +114,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
-            android:checkedButton="@id/useDatabaseStorage"
-            android:layout_marginBottom="24dp">
+            android:layout_marginBottom="24dp"
+            android:checkedButton="@id/useDatabaseStorage">
 
             <RadioButton
                 android:id="@+id/useFileStorage"
@@ -128,7 +151,6 @@
 
         </RadioGroup>
     </RelativeLayout>
-
 
 
 </RelativeLayout>

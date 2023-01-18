@@ -12,25 +12,44 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="#A9000000"
-        android:layout_above="@id/bottomBar"
-        android:translationZ="1dp">
+        android:translationZ="10dp">
 
-        <ImageView
-            android:id="@+id/loadingIndicator"
-            android:layout_width="100dp"
-            android:layout_height="100dp"
-            android:layout_centerInParent="true" />
-        >
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="30dp"
+            android:layout_centerInParent="true"
+            android:translationZ="10dp"
+            app:cardUseCompatPadding="true"
+            app:cardCornerRadius="5dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="16dp">
+
+                <ImageView
+                    android:id="@+id/loadingIndicator"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    app:tint="?android:colorPrimary"/>
+                <View
+                    android:layout_width="30dp"
+                    android:layout_height="match_parent"/>
+
+                <TextView
+                    android:id="@+id/textLoading"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Capturing"
+                    android:layout_gravity="center_vertical"
+                    tools:ignore="HardcodedText" />
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
     </RelativeLayout>
 
-    <ImageView
-        android:visibility="gone"
-        android:id="@+id/capturedImage"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:scaleType="fitCenter"
-        android:layout_below="@id/topBar"
-        android:layout_above="@id/bottomBar" />
 
     <androidx.camera.view.PreviewView
         android:id="@+id/livePreview"
@@ -45,12 +64,12 @@
         android:layout_height="wrap_content">
 
         <ImageView
+            android:layout_margin="8dp"
             android:id="@+id/torchBtn"
             android:layout_width="50dp"
             android:layout_height="50dp"
             android:layout_centerInParent="true"
             android:src="@drawable/ic_torch_foreground"
-            android:layout_centerHorizontal="true"
             app:tint="@color/white" />
     </RelativeLayout>
 

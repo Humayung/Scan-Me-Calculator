@@ -4,20 +4,30 @@ import android.annotation.SuppressLint
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable
+import com.example.scanmecalculator.Helper.adjustSafeAreaPadding
+import com.example.scanmecalculator.Helper.transparentStatusBar
 import com.example.scanmecalculator.adapter.ResultAdapter
 import com.example.scanmecalculator.databinding.ActivityMainBinding
 import com.example.scanmecalculator.model.ResultItem
 import com.example.scanmecalculator.persistence.Storage
 import com.example.scanmecalculator.persistence.StorageType
 import com.googlecode.tesseract.android.TessBaseAPI
+import com.karumi.dexter.Dexter
+import com.karumi.dexter.PermissionToken
+import com.karumi.dexter.listener.PermissionDeniedResponse
+import com.karumi.dexter.listener.PermissionGrantedResponse
+import com.karumi.dexter.listener.PermissionRequest
+import com.karumi.dexter.listener.single.PermissionListener
 import kotlinx.coroutines.*
 import mathjs.niltonvasques.com.mathjs.MathJS
 import org.koin.core.component.KoinComponent
@@ -40,6 +50,7 @@ class MainActivity : AppCompatActivity(), KoinComponent, CoroutineScope {
     data class EvalResult(var success: Boolean = false, var result: String = "")
 
     private lateinit var binding: ActivityMainBinding
+    @RequiresApi(Build.VERSION_CODES.P)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -60,7 +71,7 @@ class MainActivity : AppCompatActivity(), KoinComponent, CoroutineScope {
             showFileChooser()
         }
 
-        initLoading()
+        initLoadingIndicator()
         initTesseract()
 
         binding.storageSelector.setOnCheckedChangeListener { _, i ->
@@ -106,32 +117,34 @@ class MainActivity : AppCompatActivity(), KoinComponent, CoroutineScope {
             loadResults()
         }
 
+        initLoadingIndicator()
 
+        transparentStatusBar(this)
+        adjustSafeAreaPadding(binding.coordinatorLayout, binding.resultsRv)
     }
+
+
 
     private val job = Job()
 
 
     @SuppressLint("SetTextI18n")
-    private fun initLoading() = with(binding) {
-        textLoading.text = "Feeding tesseract"
-        val circularProgressDrawable = CircularProgressDrawable(applicationContext)
+    private fun initLoadingIndicator() = with(binding) {
+        val circularProgressDrawable = CircularProgressDrawable(this@MainActivity)
         circularProgressDrawable.strokeWidth = 5f
-        circularProgressDrawable.centerRadius = 30f
-        circularProgressDrawable.setColorSchemeColors(Color.WHITE, Color.WHITE, Color.WHITE)
+        circularProgressDrawable.centerRadius = 50f
+        circularProgressDrawable.setColorSchemeColors(Color.BLACK)
         circularProgressDrawable.start()
         loadingIndicator.background = circularProgressDrawable
     }
 
-
     private fun processImage() = with(binding) {
-        initLoading()
+        initLoadingIndicator()
         setLoading(true)
         val photoFile = memoryDb.imageToProcess.value
-        var text = ""
         launch(Dispatchers.IO) {
             tesseract.setImage(photoFile)
-            text = tesseract.utF8Text
+            val text = tesseract.utF8Text
             val firstExpression = text.split("\n")[0]
             Log.d(TAG, text)
             consumeExpression(firstExpression)
@@ -190,8 +203,17 @@ class MainActivity : AppCompatActivity(), KoinComponent, CoroutineScope {
 
     private fun setLoading(status: Boolean) = with(binding) {
         if (status) {
+            addInputBtn.isEnabled = false
+            resultsRv.isEnabled = false
+            useDatabaseStorage.isEnabled = false
+            useFileStorage.isEnabled = false
             overlayBar.visibility = View.VISIBLE
         } else {
+            addInputBtn.isEnabled = true
+            resultsRv.isEnabled = true
+            parent.isEnabled = true
+            useDatabaseStorage.isEnabled = true
+            useFileStorage.isEnabled = true
             overlayBar.visibility = View.GONE
         }
     }
@@ -215,6 +237,42 @@ class MainActivity : AppCompatActivity(), KoinComponent, CoroutineScope {
         job.cancel() // cancel all coroutines when the activity is destroyed
     }
 
+    private fun startCamera() {
+        val intent = Intent(applicationContext, CameraActivity::class.java)
+        startActivity(intent)
+    }
+
+    private fun disableCamera() = with(binding) {
+        addInputBtn.isEnabled = false
+        errorPermissionTxt.visibility = View.VISIBLE
+    }
+
+    private fun getPermissionThenRun(
+        permission: String, onGranted: () -> Unit, onDenied: () -> Unit
+    ) {
+        Dexter.withContext(applicationContext).withPermission(permission)
+            .withListener(object : PermissionListener {
+                override fun onPermissionGranted(p0: PermissionGrantedResponse?) {
+                    onGranted()
+                }
+
+                override fun onPermissionDenied(p0: PermissionDeniedResponse?) {
+                    onDenied()
+                    Toast.makeText(
+                        applicationContext,
+                        "Enable Camera permission in the setting to use the app!",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+
+                override fun onPermissionRationaleShouldBeShown(
+                    p0: PermissionRequest?, p1: PermissionToken?
+                ) {
+                    p1?.continuePermissionRequest()
+                }
+
+            }).check()
+    }
 
     private fun initTesseract() {
         val assetManager = applicationContext.assets
@@ -234,6 +292,7 @@ class MainActivity : AppCompatActivity(), KoinComponent, CoroutineScope {
     }
 
 
+    @SuppressLint("NotifyDataSetChanged")
     private fun loadResults() = with(binding) {
         val savedResult = storage.getResultList()
         Log.d(TAG, "SIZE " + savedResult.size)
@@ -247,7 +306,6 @@ class MainActivity : AppCompatActivity(), KoinComponent, CoroutineScope {
         resultAdapter.notifyDataSetChanged()
         resultsRv.visibility = View.VISIBLE
         emptyResultText.visibility = View.GONE
-
     }
 
     override val coroutineContext: CoroutineContext

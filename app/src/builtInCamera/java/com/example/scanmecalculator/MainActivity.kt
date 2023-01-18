@@ -4,14 +4,18 @@ import android.annotation.SuppressLint
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable
+import com.example.scanmecalculator.Helper.adjustSafeAreaPadding
+import com.example.scanmecalculator.Helper.transparentStatusBar
 import com.example.scanmecalculator.adapter.ResultAdapter
 import com.example.scanmecalculator.databinding.ActivityMainBinding
 import com.example.scanmecalculator.model.ResultItem
@@ -46,6 +50,7 @@ class MainActivity : AppCompatActivity(), KoinComponent, CoroutineScope {
     data class EvalResult(var success: Boolean = false, var result: String = "")
 
     private lateinit var binding: ActivityMainBinding
+    @RequiresApi(Build.VERSION_CODES.P)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -69,7 +74,7 @@ class MainActivity : AppCompatActivity(), KoinComponent, CoroutineScope {
                 onDenied = { disableCamera() })
         }
 
-        initLoading()
+        initLoadingIndicator()
         initTesseract()
 
         binding.storageSelector.setOnCheckedChangeListener { _, i ->
@@ -115,25 +120,29 @@ class MainActivity : AppCompatActivity(), KoinComponent, CoroutineScope {
             loadResults()
         }
 
+        initLoadingIndicator()
 
+        transparentStatusBar(this)
+        adjustSafeAreaPadding(binding.coordinatorLayout, binding.resultsRv)
     }
+
+
 
     private val job = Job()
 
 
     @SuppressLint("SetTextI18n")
-    private fun initLoading() = with(binding) {
-        textLoading.text = "Feeding tesseract"
-        val circularProgressDrawable = CircularProgressDrawable(applicationContext)
+    private fun initLoadingIndicator() = with(binding) {
+        val circularProgressDrawable = CircularProgressDrawable(this@MainActivity)
         circularProgressDrawable.strokeWidth = 5f
-        circularProgressDrawable.centerRadius = 30f
-        circularProgressDrawable.setColorSchemeColors(Color.WHITE, Color.WHITE, Color.WHITE)
+        circularProgressDrawable.centerRadius = 50f
+        circularProgressDrawable.setColorSchemeColors(Color.BLACK)
         circularProgressDrawable.start()
         loadingIndicator.background = circularProgressDrawable
     }
 
     private fun processImage() = with(binding) {
-        initLoading()
+        initLoadingIndicator()
         setLoading(true)
         val photoFile = memoryDb.imageToProcess.value
         var text = ""
@@ -198,8 +207,17 @@ class MainActivity : AppCompatActivity(), KoinComponent, CoroutineScope {
 
     private fun setLoading(status: Boolean) = with(binding) {
         if (status) {
+            addInputBtn.isEnabled = false
+            resultsRv.isEnabled = false
+            useDatabaseStorage.isEnabled = false
+            useFileStorage.isEnabled = false
             overlayBar.visibility = View.VISIBLE
         } else {
+            addInputBtn.isEnabled = true
+            resultsRv.isEnabled = true
+            parent.isEnabled = true
+            useDatabaseStorage.isEnabled = true
+            useFileStorage.isEnabled = true
             overlayBar.visibility = View.GONE
         }
     }

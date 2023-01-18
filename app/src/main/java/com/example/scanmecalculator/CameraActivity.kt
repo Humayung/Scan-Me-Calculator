@@ -1,15 +1,20 @@
 package com.example.scanmecalculator
 
+import android.app.Activity
 import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.view.Window
+import android.view.WindowManager
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
+import androidx.core.view.DisplayCutoutCompat
+import androidx.core.view.ViewCompat
 import androidx.lifecycle.coroutineScope
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable
 import com.example.scanmecalculator.databinding.ActivityCameraBinding
@@ -24,9 +29,9 @@ class CameraActivity : AppCompatActivity(), KoinComponent {
     private lateinit var cameraProviderFuture: ListenableFuture<ProcessCameraProvider>
     private lateinit var imageCapture: ImageCapture
     private val memoryDb: MemoryDb by inject()
-    private lateinit var binding : ActivityCameraBinding
+    private lateinit var binding: ActivityCameraBinding
 
-    override fun onCreate(savedInstanceState: Bundle?){
+    override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         binding = ActivityCameraBinding.inflate(layoutInflater)
@@ -39,19 +44,23 @@ class CameraActivity : AppCompatActivity(), KoinComponent {
             takePicture()
         }
         initLoadingIndicator()
+        Helper.transparentStatusBar(this)
+        Helper.adjustSafeAreaPadding(view, binding.topBar)
     }
 
 
-    private fun initLoadingIndicator() = with(binding){
-        val circularProgressDrawable = CircularProgressDrawable(applicationContext)
+
+
+    private fun initLoadingIndicator() = with(binding) {
+        val circularProgressDrawable = CircularProgressDrawable(this@CameraActivity)
         circularProgressDrawable.strokeWidth = 5f
-        circularProgressDrawable.centerRadius = 100f
-        circularProgressDrawable.setColorSchemeColors(Color.WHITE, Color.WHITE, Color.WHITE)
+        circularProgressDrawable.centerRadius = 50f
+        circularProgressDrawable.setColorSchemeColors(Color.BLACK)
         circularProgressDrawable.start()
         loadingIndicator.background = circularProgressDrawable
     }
 
-    private fun attachTorchControl(camera: Camera)  = with(binding){
+    private fun attachTorchControl(camera: Camera) = with(binding) {
         if (!camera.cameraInfo.hasFlashUnit()) {
             torchBtn.visibility = View.GONE
         } else {
@@ -62,7 +71,7 @@ class CameraActivity : AppCompatActivity(), KoinComponent {
         }
     }
 
-    private fun startCamera() = with(binding){
+    private fun startCamera() = with(binding) {
         cameraProviderFuture = ProcessCameraProvider.getInstance(applicationContext)
         cameraProviderFuture.addListener({
             val cameraProvider = cameraProviderFuture.get()
@@ -86,7 +95,7 @@ class CameraActivity : AppCompatActivity(), KoinComponent {
     }
 
 
-    private fun setLoading(status: Boolean) = with(binding){
+    private fun setLoading(status: Boolean) = with(binding) {
         if (status) {
             overlayBar.visibility = View.VISIBLE
             shutterBtn.isEnabled = false
@@ -130,7 +139,6 @@ class CameraActivity : AppCompatActivity(), KoinComponent {
             }
         )
     }
-
 
 
     private fun buildImagePreviewUseCase(): Preview {

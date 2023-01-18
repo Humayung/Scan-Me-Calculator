@@ -1,25 +1,34 @@
 package com.example.scanmecalculator
 
-import android.graphics.*
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.ColorMatrix
+import android.graphics.ColorMatrixColorFilter
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.coroutineScope
 import com.example.scanmecalculator.databinding.ActivityPreviewBinding
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
+import org.opencv.android.OpenCVLoader
+import org.opencv.android.Utils
+import org.opencv.core.Mat
+import org.opencv.core.Point
+import org.opencv.core.Size
+import org.opencv.imgproc.Imgproc
 import java.io.File
 import java.io.FileOutputStream
+import kotlin.coroutines.CoroutineContext
 
 
-class PreviewActivity : AppCompatActivity(), KoinComponent {
+class PreviewActivity : AppCompatActivity(), KoinComponent, CoroutineScope {
 
     private val memoryDb: MemoryDb by inject()
     private lateinit var binding: ActivityPreviewBinding
-    override fun onCreate(savedInstanceState: Bundle?)  {
+    override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
 
@@ -50,9 +59,39 @@ class PreviewActivity : AppCompatActivity(), KoinComponent {
             setPreview(it)
         }
         binding.imagePreview.isDrawingCacheEnabled = true;
+        OpenCVLoader.initDebug();
     }
 
-    private fun setPreview(imageUri: Uri) = with(binding){
+
+    fun preProcessImg(bitmap: Bitmap) {
+        Log.d(TAG, "preprocessing")
+        var tempMat = Mat()
+        var source = Mat()
+        Utils.bitmapToMat(bitmap, tempMat)
+        Imgproc.cvtColor(tempMat, source, Imgproc.COLOR_BGR2GRAY)
+        var result = Mat()
+//        Imgproc.threshold(source, result, 150.0, 255.0, Imgproc.THRESH_BINARY_INV)
+        Imgproc.adaptiveThreshold(
+            source,
+            result,
+            255.0,
+            Imgproc.ADAPTIVE_THRESH_MEAN_C,
+            Imgproc.THRESH_BINARY_INV,
+            101,
+            40.0
+        )
+        val element = Imgproc.getStructuringElement(
+            Imgproc.MORPH_RECT,
+            Size(2.0, 2.0)
+        )
+        Imgproc.erode(result, result, element)
+        val kernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, Size(3.0, 3.0))
+        Imgproc.morphologyEx(result, result, Imgproc.MORPH_CLOSE, kernel)
+        Imgproc.dilate(result, result, Mat(), Point(-1.0, -1.0))
+        Utils.matToBitmap(result, bitmap)
+    }
+
+    private fun setPreview(imageUri: Uri) = with(binding) {
         lifecycle.coroutineScope.launch {
             contrastSlider.value = 1f
             brightnessSlider.value = 0f
@@ -62,15 +101,14 @@ class PreviewActivity : AppCompatActivity(), KoinComponent {
                 imagePreview.setImageBitmap(bmp)
             }
         }
-
     }
 
-    private fun deleteImage() = with(binding){
+    private fun deleteImage() = with(binding) {
         imagePreview.setImageBitmap(null)
         finish()
     }
 
-    private fun finaliseImage() = with(binding){
+    private fun finaliseImage() = with(binding) {
         val bmp = imagePreview.drawingCache
         val photoFile = File(filesDir, "post-processed.jpeg")
         bmp.compress(Bitmap.CompressFormat.JPEG, 100, FileOutputStream(photoFile))
@@ -88,7 +126,6 @@ class PreviewActivity : AppCompatActivity(), KoinComponent {
 
 
     private fun prepareBmpFromImagePath(imageUri: Uri): Bitmap? {
-
         val iStream = applicationContext.contentResolver?.openInputStream(imageUri)
 
         val options = BitmapFactory.Options()
@@ -96,11 +133,13 @@ class PreviewActivity : AppCompatActivity(), KoinComponent {
         var bmp = BitmapFactory.decodeStream(iStream, null, options)
         iStream?.close()
         bmp = scaleDownBmp(bmp!!)
+        preProcessImg(bmp!!)
+
         return bmp
     }
 
 
-    private fun setContrastAndBrightness() = with(binding){
+    private fun setContrastAndBrightness() = with(binding) {
         val contrast = memoryDb.contrast.value ?: 1f
         val brightness = memoryDb.brightness.value ?: 0f
 
@@ -119,4 +158,8 @@ class PreviewActivity : AppCompatActivity(), KoinComponent {
         imagePreview.colorFilter = filter
 
     }
+
+    private val job = Job()
+    override val coroutineContext: CoroutineContext
+        get() = Dispatchers.Main + job
 }

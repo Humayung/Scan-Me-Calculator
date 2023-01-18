@@ -20,7 +20,10 @@ class EncryptedFile(context: Context) : StorageInterface {
         val savedResults = getResultList()
         savedResults.add(item)
         val file = File(context?.filesDir, ENCRYPTED_FILE_NAME)
-        AESUtils.saveArrayToEncryptedFile(savedResults, file)
+
+        val gson = Gson()
+        val jsonString = gson.toJson(savedResults)
+        AESUtils.saveArrayToEncryptedFile(jsonString.toByteArray(), file)
     }
 
     override fun getResultList(): ArrayList<ResultItem> {

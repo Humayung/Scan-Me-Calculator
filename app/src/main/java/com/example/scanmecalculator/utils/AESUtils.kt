@@ -14,10 +14,8 @@ import javax.crypto.spec.SecretKeySpec
 object AESUtils {
     private val SECRET = "ASDFGHJKLASDFGHJ".toByteArray()
 
-    fun saveArrayToEncryptedFile(resultItems: ArrayList<ResultItem>, file: File?) {
-        val gson = Gson()
-        val jsonString = gson.toJson(resultItems)
-        val encryptedJsonString = encrypt(rawKey, jsonString.toByteArray())
+    fun saveArrayToEncryptedFile(byteArray : ByteArray, file: File?) {
+        val encryptedJsonString = encrypt(rawKey, byteArray)
         val fos = FileOutputStream(file)
         fos.write(encryptedJsonString)
         fos.close()

@@ -15,13 +15,10 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable
 import com.example.scanmecalculator.adapter.ResultAdapter
 import com.example.scanmecalculator.databinding.ActivityMainBinding
-import com.example.scanmecalculator.model.OcrResponse
 import com.example.scanmecalculator.model.ResultItem
-import com.example.scanmecalculator.networking.ApiReq
-import com.example.scanmecalculator.networking.Resource
-import com.example.scanmecalculator.networking.Status
 import com.example.scanmecalculator.persistence.Storage
 import com.example.scanmecalculator.persistence.StorageType
+import com.googlecode.tesseract.android.TessBaseAPI
 import com.karumi.dexter.Dexter
 import com.karumi.dexter.PermissionToken
 import com.karumi.dexter.listener.PermissionDeniedResponse
@@ -30,14 +27,13 @@ import com.karumi.dexter.listener.PermissionRequest
 import com.karumi.dexter.listener.single.PermissionListener
 import kotlinx.coroutines.*
 import mathjs.niltonvasques.com.mathjs.MathJS
-import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.MultipartBody
-import okhttp3.RequestBody.Companion.asRequestBody
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
+import java.io.File
 import kotlin.coroutines.CoroutineContext
+import kotlin.io.path.absolutePathString
 
 
 class MainActivity : AppCompatActivity(), KoinComponent, CoroutineScope {
@@ -46,8 +42,8 @@ class MainActivity : AppCompatActivity(), KoinComponent, CoroutineScope {
     private val memoryDb: MemoryDb by inject()
     private var fileChooserLauncher: ActivityResultLauncher<Intent>? = null
     private val math: MathJS by inject()
-    private val apiReq: ApiReq by inject()
     private val storage: Storage by inject()
+    private val tesseract: TessBaseAPI by inject()
 
     private lateinit var binding: ActivityMainBinding
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -78,6 +74,7 @@ class MainActivity : AppCompatActivity(), KoinComponent, CoroutineScope {
         }
 
         initLoading()
+        initTesseract()
 
         binding.storageSelector.setOnCheckedChangeListener { _, i ->
             when (i) {
@@ -89,7 +86,8 @@ class MainActivity : AppCompatActivity(), KoinComponent, CoroutineScope {
                 }
                 R.id.useFileStorage -> {
                     memoryDb.selectedStorage.value = StorageType.ENCRYPTED_FILE
-                    binding.storageLabel.text = getString(R.string.storage_used_encrypted_file)
+                    val filePath = File(filesDir, ENCRYPTED_FILE_NAME).absoluteFile
+                    binding.storageLabel.text = getString(R.string.storage_used_encrypted_file, filePath)
                 }
             }
         }
@@ -119,8 +117,6 @@ class MainActivity : AppCompatActivity(), KoinComponent, CoroutineScope {
             storage.switchStorage(it)
             loadResults()
         }
-        Toast.makeText(this, com.example.scanmecalculator.BuildConfig.FLAVOR, Toast.LENGTH_LONG)
-            .show()
 
 
     }
@@ -130,7 +126,7 @@ class MainActivity : AppCompatActivity(), KoinComponent, CoroutineScope {
 
     @SuppressLint("SetTextI18n")
     private fun initLoading() = with(binding) {
-        textLoading.text = "Requesting $BASE_URL"
+        textLoading.text = "Feeding tesseract"
         val circularProgressDrawable = CircularProgressDrawable(applicationContext)
         circularProgressDrawable.strokeWidth = 5f
         circularProgressDrawable.centerRadius = 30f
@@ -143,58 +139,18 @@ class MainActivity : AppCompatActivity(), KoinComponent, CoroutineScope {
     private fun processImage() = with(binding) {
         initLoading()
         setLoading(true)
-        val photoFile = memoryDb.imageToProcess.value
-        val image = MultipartBody.Part.createFormData(
-            "image", "my-image.png", photoFile!!.asRequestBody("image/png".toMediaType())
-        )
-        
-
-        // TODO: TEST DUMMY
-        apiReq.getOcr(image).observe(this@MainActivity) {
-            if (it.status == Status.SUCCESS) {
-                successOcr(it)
-            } else {
-                failedOcr(it)
-            }
-
+        launch {
+            val photoFile = memoryDb.imageToProcess.value
+            tesseract.setImage(photoFile)
+            val text = tesseract.utF8Text
+            val firstExpression = text.split("\n")[0]
+            Log.d(TAG, "BODY $text")
+            consumeExpression(firstExpression)
+            setLoading(false)
         }
     }
 
-    private fun failedOcr(response: Resource<OcrResponse>) {
-        when (response.status) {
-            Status.LOADING -> {
-                setLoading(true)
-            }
-            Status.ERROR -> {
-                Log.d(TAG, "FAILED " + response.message)
-                Toast.makeText(
-                    applicationContext,
-                    "Failed " + response.status + " " + response.message,
-                    Toast.LENGTH_LONG
-                ).show()
-                setLoading(false)
-            }
-            else -> {
-                setLoading(false)
-            }
-        }
 
-
-    }
-
-    private fun successOcr(response: Resource<OcrResponse>?) {
-
-        val text = response?.response!!.ParsedResults[0].ParsedText
-        val firstExpression = text.split("\n")[0]
-
-        // TODO: TEST DUMMYTEST DUMMYTEST DUMMYTEST DUMMYTEST DUMMYTEST DUMMYTEST DUMMYTEST DUMMYTEST DUMMY
-//        val text = "3+4\n5+2"
-//        val firstExpression = "3+4"
-
-        Log.d(TAG, "BODY $text")
-        consumeExpression(firstExpression)
-        setLoading(false)
-    }
 
     private fun consumeExpression(expression: String) {
         try {
@@ -291,6 +247,23 @@ class MainActivity : AppCompatActivity(), KoinComponent, CoroutineScope {
                 }
 
             }).check()
+    }
+
+    private fun initTesseract() {
+        val assetManager = applicationContext.assets
+
+        val file = File(filesDir, "tessdata/eng.traineddata")
+        if (!file.exists()) {
+            val inputStream = assetManager.open("tessdata/eng.traineddata")
+            file.parentFile?.mkdirs()
+            file.writeBytes(inputStream.readBytes())
+        }
+        val pathToData = filesDir.absolutePath
+        tesseract.init(pathToData, "eng")
+        Log.d(TAG, "tesseract initialized")
+        val files = fileList().joinToString("\n")
+        Log.d(TAG, files)
+
     }
 
 

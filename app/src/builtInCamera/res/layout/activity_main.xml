@@ -148,7 +148,6 @@
                 android:text="@string/use_database_storage"
                 android:textAlignment="textStart"
                 android:textSize="14sp" />
-
         </RadioGroup>
     </RelativeLayout>
 

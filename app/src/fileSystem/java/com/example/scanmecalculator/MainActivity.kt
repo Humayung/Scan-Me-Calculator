@@ -8,13 +8,14 @@ import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.widget.RelativeLayout
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable
-import com.example.scanmecalculator.Helper.adjustSafeAreaPadding
 import com.example.scanmecalculator.Helper.transparentStatusBar
 import com.example.scanmecalculator.adapter.ResultAdapter
 import com.example.scanmecalculator.databinding.ActivityMainBinding
@@ -50,6 +51,7 @@ class MainActivity : AppCompatActivity(), KoinComponent, CoroutineScope {
     data class EvalResult(var success: Boolean = false, var result: String = "")
 
     private lateinit var binding: ActivityMainBinding
+
     @RequiresApi(Build.VERSION_CODES.P)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -120,9 +122,17 @@ class MainActivity : AppCompatActivity(), KoinComponent, CoroutineScope {
         initLoadingIndicator()
 
         transparentStatusBar(this)
-        adjustSafeAreaPadding(binding.coordinatorLayout, binding.resultsRv)
+//        ViewCompat.setOnApplyWindowInsetsListener(
+//            binding.coordinatorLayout
+//        ) { v, insets ->
+//            val top = insets.systemWindowInsetTop
+//            val bottom = insets.systemWindowInsetBottom
+//            binding.coordinatorLayout.setPadding(0, top, 0, bottom)
+//            insets
+//        }
+        Helper.adjustSafeAreaPaddingTop(binding.coordinatorLayout, binding.resultsRv)
+//        Helper.adjustSafeAreaPaddingBottom(binding.coordinatorLayout, binding.storageSelector)
     }
-
 
 
     private val job = Job()

@@ -1,20 +1,15 @@
 package com.example.scanmecalculator
 
-import android.app.Activity
 import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.view.View
-import android.view.Window
-import android.view.WindowManager
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
-import androidx.core.view.DisplayCutoutCompat
-import androidx.core.view.ViewCompat
 import androidx.lifecycle.coroutineScope
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable
 import com.example.scanmecalculator.databinding.ActivityCameraBinding
@@ -45,7 +40,8 @@ class CameraActivity : AppCompatActivity(), KoinComponent {
         }
         initLoadingIndicator()
         Helper.transparentStatusBar(this)
-        Helper.adjustSafeAreaPadding(view, binding.topBar)
+        Helper.adjustSafeAreaPaddingTop(binding.coordinatorLayout, binding.topBar)
+//        Helper.adjustSafeAreaPaddingBottom(binding.coordinatorLayout, binding.bottomBar)
     }
 
 

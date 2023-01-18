@@ -14,7 +14,8 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable
-import com.example.scanmecalculator.Helper.adjustSafeAreaPadding
+import com.example.scanmecalculator.Helper.adjustSafeAreaPaddingBottom
+import com.example.scanmecalculator.Helper.adjustSafeAreaPaddingTop
 import com.example.scanmecalculator.Helper.transparentStatusBar
 import com.example.scanmecalculator.adapter.ResultAdapter
 import com.example.scanmecalculator.databinding.ActivityMainBinding
@@ -123,7 +124,8 @@ class MainActivity : AppCompatActivity(), KoinComponent, CoroutineScope {
         initLoadingIndicator()
 
         transparentStatusBar(this)
-        adjustSafeAreaPadding(binding.coordinatorLayout, binding.resultsRv)
+//        adjustSafeAreaPaddingBottom(binding.coordinatorLayout, binding.storageSelector)
+        adjustSafeAreaPaddingTop(binding.coordinatorLayout, binding.resultsRv)
     }
 
 

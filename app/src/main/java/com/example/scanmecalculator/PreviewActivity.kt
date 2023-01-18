@@ -7,7 +7,6 @@ import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
-import android.view.WindowManager
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.scanmecalculator.databinding.ActivityPreviewBinding
@@ -53,7 +52,8 @@ class PreviewActivity : AppCompatActivity(), KoinComponent, CoroutineScope {
         OpenCVLoader.initDebug();
 
         Helper.transparentStatusBar(this)
-        Helper.adjustSafeAreaPadding(view, binding.tools)
+        Helper.adjustSafeAreaPaddingTop(binding.coordinatorLayout, binding.tools)
+//        Helper.adjustSafeAreaPaddingBottom(binding.coordinatorLayout, binding.processButton)
     }
 
 

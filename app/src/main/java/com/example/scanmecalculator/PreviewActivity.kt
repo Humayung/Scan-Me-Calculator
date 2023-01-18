@@ -2,13 +2,13 @@ package com.example.scanmecalculator
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.graphics.ColorMatrix
-import android.graphics.ColorMatrixColorFilter
+import android.graphics.Matrix
+import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.coroutineScope
 import com.example.scanmecalculator.databinding.ActivityPreviewBinding
 import kotlinx.coroutines.*
 import org.koin.core.component.KoinComponent
@@ -37,18 +37,6 @@ class PreviewActivity : AppCompatActivity(), KoinComponent, CoroutineScope {
 
         setContentView(view)
 
-        binding.brightnessSlider.addOnChangeListener { _, value, _ ->
-            memoryDb.brightness.value = value
-        }
-        binding.contrastSlider.addOnChangeListener { _, value, _ ->
-            memoryDb.contrast.value = value
-        }
-        memoryDb.contrast.observe(this@PreviewActivity) {
-            setContrastAndBrightness()
-        }
-        memoryDb.brightness.observe(this@PreviewActivity) {
-            setContrastAndBrightness()
-        }
         binding.processButton.setOnClickListener {
             finaliseImage()
         }
@@ -58,19 +46,20 @@ class PreviewActivity : AppCompatActivity(), KoinComponent, CoroutineScope {
         memoryDb.imageUri.observe(this@PreviewActivity) {
             setPreview(it)
         }
-        binding.imagePreview.isDrawingCacheEnabled = true;
+        binding.rotateBtn.setOnClickListener {
+            rotatePreview()
+        }
         OpenCVLoader.initDebug();
     }
 
 
-    fun preProcessImg(bitmap: Bitmap) {
+    private fun preProcessImg(bitmap: Bitmap): Bitmap? {
         Log.d(TAG, "preprocessing")
-        var tempMat = Mat()
-        var source = Mat()
+        val tempMat = Mat()
+        val source = Mat()
         Utils.bitmapToMat(bitmap, tempMat)
         Imgproc.cvtColor(tempMat, source, Imgproc.COLOR_BGR2GRAY)
-        var result = Mat()
-//        Imgproc.threshold(source, result, 150.0, 255.0, Imgproc.THRESH_BINARY_INV)
+        val result = Mat()
         Imgproc.adaptiveThreshold(
             source,
             result,
@@ -88,19 +77,31 @@ class PreviewActivity : AppCompatActivity(), KoinComponent, CoroutineScope {
         val kernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, Size(3.0, 3.0))
         Imgproc.morphologyEx(result, result, Imgproc.MORPH_CLOSE, kernel)
         Imgproc.dilate(result, result, Mat(), Point(-1.0, -1.0))
-        Utils.matToBitmap(result, bitmap)
+
+        val w: Int = result.width()
+        val h: Int = result.height()
+
+        val conf = Bitmap.Config.ARGB_8888 // see other conf types
+
+        val bmp = Bitmap.createBitmap(w, h, conf) // this creates a MUTABLE bitmap
+
+        Utils.matToBitmap(result, bmp)
+        return bmp
     }
 
     private fun setPreview(imageUri: Uri) = with(binding) {
-        lifecycle.coroutineScope.launch {
-            contrastSlider.value = 1f
-            brightnessSlider.value = 0f
-            withContext(Dispatchers.Main) {
+        try {
+            launch(Dispatchers.IO) {
                 val bmp = prepareBmpFromImagePath(imageUri)
-
-                imagePreview.setImageBitmap(bmp)
+                withContext(Dispatchers.Main) {
+                    imagePreview.setImageBitmap(bmp)
+                }
             }
+        } catch (e: java.lang.Exception) {
+            Toast.makeText(this@PreviewActivity, "An error occurred!", Toast.LENGTH_LONG)
+                .show()
         }
+
     }
 
     private fun deleteImage() = with(binding) {
@@ -109,55 +110,45 @@ class PreviewActivity : AppCompatActivity(), KoinComponent, CoroutineScope {
     }
 
     private fun finaliseImage() = with(binding) {
-        val bmp = imagePreview.drawingCache
+        val bmp = (imagePreview.drawable as BitmapDrawable).bitmap
         val photoFile = File(filesDir, "post-processed.jpeg")
         bmp.compress(Bitmap.CompressFormat.JPEG, 100, FileOutputStream(photoFile))
         memoryDb.imageToProcess.value = photoFile
         finish()
     }
 
-    private fun scaleDownBmp(bmp: Bitmap): Bitmap? {
+    private fun scaleDownBmp(bmp: Bitmap): Bitmap {
         val originalWidth = bmp.width
         val originalHeight = bmp.height
-        val desiredWidth = (originalWidth * 0.5).toInt()
-        val desiredHeight = (originalHeight * 0.5).toInt()
+        val desiredWidth = (originalWidth * 0.8).toInt()
+        val desiredHeight = (originalHeight * 0.8).toInt()
         return Bitmap.createScaledBitmap(bmp, desiredWidth, desiredHeight, true)
     }
 
 
-    private fun prepareBmpFromImagePath(imageUri: Uri): Bitmap? {
+    private fun prepareBmpFromImagePath(imageUri: Uri): Bitmap {
         val iStream = applicationContext.contentResolver?.openInputStream(imageUri)
-
         val options = BitmapFactory.Options()
-
         var bmp = BitmapFactory.decodeStream(iStream, null, options)
         iStream?.close()
         bmp = scaleDownBmp(bmp!!)
-        preProcessImg(bmp!!)
-
-        return bmp
+        bmp = preProcessImg(bmp)
+        return bmp!!
     }
 
+    private fun rotatePreview() = with(binding) {
+        val bitmap = (imagePreview.drawable as BitmapDrawable).bitmap
+        val rotation = -90f
+        val matrix = Matrix().apply {
+            if (rotation != 0f) preRotate(rotation)
+        }
 
-    private fun setContrastAndBrightness() = with(binding) {
-        val contrast = memoryDb.contrast.value ?: 1f
-        val brightness = memoryDb.brightness.value ?: 0f
-
-        val colorMatrix = ColorMatrix()
-        colorMatrix.set(
-            floatArrayOf(
-                contrast, 0f, 0f, 0f, brightness,
-                0f, contrast, 0f, 0f, brightness,
-                0f, 0f, contrast, 0f, brightness,
-                0f, 0f, 0f, 1f, 0f
-            )
+        val rotatedBitmap = Bitmap.createBitmap(
+            bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true
         )
-
-        val filter = ColorMatrixColorFilter(colorMatrix)
-
-        imagePreview.colorFilter = filter
-
+        imagePreview.setImageBitmap(rotatedBitmap)
     }
+
 
     private val job = Job()
     override val coroutineContext: CoroutineContext

@@ -1,11 +1,7 @@
 package com.example.scanmecalculator
 
-import android.graphics.Bitmap
 import android.graphics.Color
-import android.graphics.Matrix
-import android.media.ExifInterface
 import android.os.Bundle
-import android.provider.MediaStore
 import android.util.Log
 import android.view.View
 import android.widget.Toast
@@ -18,13 +14,10 @@ import androidx.lifecycle.coroutineScope
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable
 import com.example.scanmecalculator.databinding.ActivityCameraBinding
 import com.google.common.util.concurrent.ListenableFuture
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import java.io.File
-import java.io.FileOutputStream
 
 class CameraActivity : AppCompatActivity(), KoinComponent {
 
@@ -128,7 +121,6 @@ class CameraActivity : AppCompatActivity(), KoinComponent {
                     val msg = "Photo capture succeeded: ${output.savedUri}"
                     Log.d(TAG, msg)
                     lifecycle.coroutineScope.launch {
-                        rotateImageCorrectly(outputFile.absoluteFile)
                         memoryDb.imageUri.value = outputFile.absoluteFile.toUri()
                         setLoading(false)
                         finish()
@@ -139,37 +131,7 @@ class CameraActivity : AppCompatActivity(), KoinComponent {
         )
     }
 
-    suspend fun rotateImageCorrectly(photoFile: File) = withContext(Dispatchers.IO) {
-        val sourceBitmap =
-            MediaStore.Images.Media.getBitmap(
-                applicationContext?.contentResolver,
-                photoFile.toUri()
-            )
 
-        val exif = ExifInterface(photoFile.inputStream())
-        val rotation =
-            exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL)
-        val rotationInDegrees = when (rotation) {
-            ExifInterface.ORIENTATION_ROTATE_90 -> 90
-            ExifInterface.ORIENTATION_ROTATE_180 -> 180
-            ExifInterface.ORIENTATION_ROTATE_270 -> 270
-            ExifInterface.ORIENTATION_TRANSVERSE -> -90
-            ExifInterface.ORIENTATION_TRANSPOSE -> -270
-            else -> 0
-        }
-        val matrix = Matrix().apply {
-            if (rotation != 0) preRotate(rotationInDegrees.toFloat())
-        }
-
-        val rotatedBitmap = Bitmap.createBitmap(
-            sourceBitmap, 0, 0, sourceBitmap.width, sourceBitmap.height, matrix, true
-        )
-
-        rotatedBitmap.compress(Bitmap.CompressFormat.JPEG, 100, FileOutputStream(photoFile))
-
-        sourceBitmap.recycle()
-        rotatedBitmap.recycle()
-    }
 
     private fun buildImagePreviewUseCase(): Preview {
         return Preview.Builder()

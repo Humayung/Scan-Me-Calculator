@@ -6,44 +6,41 @@
     android:layout_height="match_parent">
 
 
-    <ImageView
-        android:id="@+id/deleteBtn"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_centerHorizontal="true"
-        android:background="?attr/selectableItemBackgroundBorderless"
-        android:src="@drawable/ic_delete_foreground"
-        app:tint="@color/black" />
+    <LinearLayout
+        android:id="@+id/tools"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:background="@color/white">
 
+        <ImageView
+            android:id="@+id/deleteBtn"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_delete_foreground"
+            app:tint="@color/black" />
+        <View
+            android:layout_width="48dp"
+            android:layout_height="match_parent"/>
+
+        <ImageView
+            android:id="@+id/rotateBtn"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_rotate_foreground"
+            app:tint="@color/black" />
+    </LinearLayout>
 
     <ImageView
         android:id="@+id/imagePreview"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@id/brightnessSlider"
-        android:layout_below="@id/deleteBtn"
-        android:layout_marginTop="-48dp"
+        android:layout_above="@id/processButton"
+        android:layout_below="@id/tools"
         android:layout_marginBottom="0dp"
         android:scaleType="fitCenter" />
-
-    <com.google.android.material.slider.Slider
-        android:id="@+id/brightnessSlider"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_above="@id/contrastSlider"
-        android:value="0"
-        android:valueFrom="-255"
-        android:valueTo="255" />
-
-
-    <com.google.android.material.slider.Slider
-        android:id="@+id/contrastSlider"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_above="@id/processButton"
-        android:value="1"
-        android:valueFrom="-10"
-        android:valueTo="10" />
 
 
     <Button

@@ -8,6 +8,6 @@ This also demonstrate:
    how a simple multi variant app works
 
 # Screenshot
-![Reference](https://github.com/Humayung/Scan-Me-Calculator/blob/master/1.jpg)
-![Reference](https://github.com/Humayung/Scan-Me-Calculator/blob/master/2.jpg)
-![Reference](https://github.com/Humayung/Scan-Me-Calculator/blob/master/3.jpg)
+![Reference](https://github.com/Humayung/Scan-Me-Calculator/blob/main/1.jpg)
+![Reference](https://github.com/Humayung/Scan-Me-Calculator/blob/main/2.jpg)
+![Reference](https://github.com/Humayung/Scan-Me-Calculator/blob/main/3.jpg)
